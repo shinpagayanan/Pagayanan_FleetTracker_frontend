@@ -1,0 +1,116 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block role_content %}
+<style>
+    *{box-sizing:border-box}
+    .rpt-intro{font-size:13px;color:#6b6b6b;margin:0 0 1.5rem;font-family:'Georgia',serif}
+    .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:1.75rem}
+    .stat-card{background:#f4f3ef;border-radius:8px;padding:.9rem 1.1rem}
+    .stat-card.accent{background:#e8f0f8}
+    .stat-label{font-size:11px;color:#6b6b6b;text-transform:uppercase;letter-spacing:.06em;margin:0 0 5px;font-family:'Georgia',serif}
+    .stat-value{font-size:22px;font-weight:500;color:#1a1a1a;margin:0;font-family:'Georgia',serif;line-height:1.1}
+    .stat-card.accent .stat-value{color:#1a3a5c}
+    .highlight-card{background:#1a3a5c;border-radius:8px;padding:.9rem 1.1rem;grid-column:span 2}
+    .highlight-card .stat-label{color:#8aaecf;font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin:0 0 4px;font-family:'Georgia',serif}
+    .highlight-card .stat-value{color:#fff;font-size:16px;font-weight:500;margin:0;font-family:'Georgia',serif}
+    .highlight-card .sub{color:#8aaecf;font-size:13px;margin:2px 0 0;font-family:'Georgia',serif}
+    .card{background:#fff;border:1px solid #e2e0da;border-radius:10px;padding:1.1rem 1.25rem;margin-bottom:1.75rem}
+    .card-title{font-size:11px;font-weight:600;color:#6b6b6b;text-transform:uppercase;letter-spacing:.08em;margin:0 0 .65rem;font-family:'Georgia',serif}
+    .legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;font-size:11px;color:#6b6b6b;font-family:'Georgia',serif}
+    .legend span{display:flex;align-items:center;gap:4px}
+    .ld{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+    .tbl-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;font-family:'Georgia',serif;font-size:13px}
+    thead tr{border-bottom:2px solid #e2e0da}
+    th{text-align:left;padding:9px 12px;font-size:11px;font-weight:600;color:#6b6b6b;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+    tbody tr{border-bottom:1px solid #f0ede8;transition:background .1s}
+    tbody tr:hover{background:#faf9f7}
+    td{padding:9px 12px;color:#1a1a1a;vertical-align:middle}
+    .section-title{font-size:11px;font-weight:600;color:#6b6b6b;text-transform:uppercase;letter-spacing:.08em;margin:0 0 1rem;font-family:'Georgia',serif}
+    @media(max-width:500px){.highlight-card{grid-column:span 1}}
+</style>
+
+<p class="rpt-intro">Vehicle mileage logs across the fleet.</p>
+
+<div class="stat-grid">
+    <div class="stat-card accent">
+        <p class="stat-label">Total logs</p>
+        <p class="stat-value">{{ report.summary.total_logs }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Vehicles logged</p>
+        <p class="stat-value">{{ report.summary.vehicles_logged }}</p>
+    </div>
+    {% if report.highest_mileage_vehicle %}
+    <div class="highlight-card">
+        <p class="stat-label">Highest mileage vehicle</p>
+        <p class="stat-value">{{ report.highest_mileage_vehicle.asset }}</p>
+        <p class="sub">{{ report.highest_mileage_vehicle.mileage }} mi</p>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <p class="card-title">Mileage by vehicle</p>
+    <div class="legend">
+        <span><span class="ld" style="background:#1a3a5c"></span>Mileage (mi)</span>
+    </div>
+    <div style="position:relative;width:100%;height:{% if report.logs %}{{ report.logs|length|add:2 }}{% else %}6{% endif %}0px;min-height:160px">
+        <canvas id="mileageBar" role="img" aria-label="Horizontal bar chart showing mileage per vehicle">Mileage logs per vehicle.</canvas>
+    </div>
+</div>
+
+<p class="section-title">Mileage log</p>
+<div class="tbl-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>Asset</th>
+                <th>Submitted by</th>
+                <th style="text-align:right">Mileage</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in report.logs %}
+            <tr>
+                <td style="font-weight:500">{{ log.asset }}</td>
+                <td>{{ log.submitted_by }}</td>
+                <td style="text-align:right;font-variant-numeric:tabular-nums;font-family:monospace;font-size:13px;color:#1a3a5c">{{ log.mileage }} mi</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+(function(){
+    var labels = [{% for log in report.logs %}"{{ log.asset }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+    var data   = [{% for log in report.logs %}{{ log.mileage|default:0 }}{% if not forloop.last %},{% endif %}{% endfor %}];
+
+    new Chart(document.getElementById('mileageBar'),{
+        type:'bar',
+        data:{
+            labels:labels,
+            datasets:[{
+                label:'Mileage',
+                data:data,
+                backgroundColor:'#1a3a5c',
+                borderRadius:4,
+                borderSkipped:false
+            }]
+        },
+        options:{
+            indexAxis:'y',
+            responsive:true,
+            maintainAspectRatio:false,
+            plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+c.parsed.x+' mi'}}}},
+            scales:{
+                x:{grid:{color:'#f0ede8'},ticks:{color:'#6b6b6b',font:{size:11}},beginAtZero:true},
+                y:{grid:{display:false},ticks:{color:'#6b6b6b',font:{size:12}}}
+            }
+        }
+    });
+})();
+</script>
+{% endblock %}

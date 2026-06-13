@@ -1,0 +1,147 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block role_content %}
+<style>
+    .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:2rem}
+    .stat-card{background:#f4f3ef;border-radius:8px;padding:1rem 1.25rem}
+    .stat-card.accent{background:#e8f0f8}
+    .stat-label{font-size:12px;color:#6b6b6b;text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px;font-family:'Georgia',serif}
+    .stat-value{font-size:26px;font-weight:500;color:#1a1a1a;margin:0;font-family:'Georgia',serif;line-height:1.1}
+    .stat-card.accent .stat-value{color:#1a3a5c}
+    .section-title{font-size:11px;font-weight:600;color:#6b6b6b;text-transform:uppercase;letter-spacing:.08em;margin:0 0 1rem;font-family:'Georgia',serif}
+    .card{background:#fff;border:1px solid #e2e0da;border-radius:10px;padding:1.25rem}
+    .charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:2rem}
+    .action-card{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e2e0da;border-radius:8px;padding:14px 16px;text-decoration:none;transition:border-color .15s,background .15s}
+    .action-card:hover{background:#f8f7f3;border-color:#c5bfb6}
+    .action-icon{width:36px;height:36px;border-radius:8px;background:#dce8f5;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .action-title{font-size:13px;font-weight:600;color:#1a1a1a;margin:0 0 2px;font-family:'Georgia',serif}
+    .action-desc{font-size:12px;color:#6b6b6b;margin:0;font-family:'Georgia',serif}
+    .actions-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+    .legend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:10px;font-size:12px;color:#6b6b6b;font-family:'Georgia',serif}
+    .legend span{display:flex;align-items:center;gap:5px}
+    .legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+</style>
+
+<p style="font-size:13px;color:#6b6b6b;margin:0 0 1.5rem;font-family:'Georgia',serif">Your personal request and mileage summary.</p>
+
+<div class="dash-grid">
+    <div class="stat-card accent">
+        <p class="stat-label">My Requests</p>
+        <p class="stat-value">{{ stats.my_requests }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Pending</p>
+        <p class="stat-value">{{ stats.pending_requests }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Approved</p>
+        <p class="stat-value">{{ stats.approved_requests }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Completed</p>
+        <p class="stat-value">{{ stats.completed_requests }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Mileage Logs</p>
+        <p class="stat-value">{{ stats.mileage_logs }}</p>
+    </div>
+</div>
+
+<div class="charts-grid">
+    <div class="card">
+        <p class="section-title" style="margin-bottom:.75rem">Request status breakdown</p>
+        <div class="legend">
+            <span><span class="legend-dot" style="background:#b5d4f4;border-radius:50%"></span>Pending {{ stats.pending_requests }}</span>
+            <span><span class="legend-dot" style="background:#5dcaa5;border-radius:50%"></span>Approved {{ stats.approved_requests }}</span>
+            <span><span class="legend-dot" style="background:#1a3a5c;border-radius:50%"></span>Completed {{ stats.completed_requests }}</span>
+        </div>
+        <div style="position:relative;width:100%;height:200px">
+            <canvas id="statusDonut" role="img" aria-label="Donut chart of request statuses">Pending: {{ stats.pending_requests }}, Approved: {{ stats.approved_requests }}, Completed: {{ stats.completed_requests }}.</canvas>
+        </div>
+    </div>
+    <div class="card">
+        <p class="section-title" style="margin-bottom:.75rem">Activity overview</p>
+        <div class="legend">
+            <span><span class="legend-dot" style="background:#1a3a5c"></span>Total requests</span>
+            <span><span class="legend-dot" style="background:#5dcaa5"></span>Mileage logs</span>
+        </div>
+        <div style="position:relative;width:100%;height:200px">
+            <canvas id="activityBar" role="img" aria-label="Bar chart of total requests and mileage logs">Requests: {{ stats.my_requests }}, Mileage logs: {{ stats.mileage_logs }}.</canvas>
+        </div>
+    </div>
+</div>
+
+<p class="section-title">Quick actions</p>
+<div class="actions-grid">
+    <a href="{% url 'create-request' %}" class="action-card">
+        <div class="action-icon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1a3a5c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        </div>
+        <div>
+            <p class="action-title">Submit maintenance request</p>
+            <p class="action-desc">Log a new maintenance issue</p>
+        </div>
+    </a>
+    <a href="{% url 'submit-mileage' %}" class="action-card">
+        <div class="action-icon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1a3a5c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div>
+            <p class="action-title">Submit mileage</p>
+            <p class="action-desc">Record your vehicle mileage</p>
+        </div>
+    </a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+(function(){
+    var pending = {{ stats.pending_requests|default:0 }};
+    var approved = {{ stats.approved_requests|default:0 }};
+    var completed = {{ stats.completed_requests|default:0 }};
+    var myRequests = {{ stats.my_requests|default:0 }};
+    var mileageLogs = {{ stats.mileage_logs|default:0 }};
+
+    new Chart(document.getElementById('statusDonut'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Pending', 'Approved', 'Completed'],
+            datasets: [{
+                data: [pending, approved, completed],
+                backgroundColor: ['#b5d4f4', '#5dcaa5', '#1a3a5c'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '68%',
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    new Chart(document.getElementById('activityBar'), {
+        type: 'bar',
+        data: {
+            labels: ['Total requests', 'Mileage logs'],
+            datasets: [{
+                data: [myRequests, mileageLogs],
+                backgroundColor: ['#1a3a5c', '#5dcaa5'],
+                borderRadius: 5,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#6b6b6b', font: { size: 12 } } },
+                y: { grid: { color: '#f0ede8' }, ticks: { color: '#6b6b6b', font: { size: 11 }, stepSize: 1 }, beginAtZero: true }
+            }
+        }
+    });
+})();
+</script>
+{% endblock %}

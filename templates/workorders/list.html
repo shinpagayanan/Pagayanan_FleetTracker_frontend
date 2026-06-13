@@ -1,0 +1,71 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block role_content %}
+<style>
+*{box-sizing:border-box}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:10px}
+.page-title{font-size:20px;font-weight:500;color:#1a1a1a;margin:0;font-family:'Georgia',serif}
+.tbl-card{background:#fff;border:1px solid #e2e0da;border-radius:10px;overflow:hidden}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-family:'Georgia',serif;font-size:13px}
+thead tr{background:#f8f7f5;border-bottom:1px solid #e2e0da}
+th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;color:#6b6b6b;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+tbody tr{border-bottom:1px solid #f0ede8;transition:background .1s}
+tbody tr:hover{background:#faf9f7}
+tbody tr:last-child{border-bottom:none}
+td{padding:10px 14px;color:#1a1a1a;vertical-align:middle}
+.id-chip{font-family:monospace;font-size:11px;color:#6b6b6b;background:#f4f3ef;padding:2px 7px;border-radius:4px}
+.desc{max-width:380px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1a1a1a}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:500;white-space:nowrap}
+.badge-done{background:#e1f4ec;color:#0f6e56}
+.badge-pending{background:#faeeda;color:#854f0b}
+.action-link{font-size:12px;color:#1a3a5c;text-decoration:none;padding:3px 10px;border:1px solid #c5d6e8;border-radius:5px;background:#f0f5fa;white-space:nowrap;transition:background .15s;display:inline-block}
+.action-link:hover{background:#dce8f5}
+.empty-row td{text-align:center;padding:2.5rem;color:#6b6b6b;font-style:italic}
+</style>
+
+<div class="page-header">
+    <h2 class="page-title">Work Orders</h2>
+</div>
+
+<div class="tbl-card">
+    <div class="tbl-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for workorder in workorders %}
+                <tr>
+                    <td><span class="id-chip">#{{ workorder.id }}</span></td>
+                    <td><span class="desc" title="{{ workorder.work_description }}">{{ workorder.work_description }}</span></td>
+                    <td>
+                        {% if workorder.completed %}
+                            <span class="badge badge-done">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                                Completed
+                            </span>
+                        {% else %}
+                            <span class="badge badge-pending">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                Pending
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'workorder-detail' workorder.id %}" class="action-link">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr class="empty-row"><td colspan="4">No work orders found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

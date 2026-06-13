@@ -1,0 +1,196 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block role_content %}
+<style>
+*{box-sizing:border-box}
+.page-header{margin-bottom:1.5rem}
+.page-title{font-size:20px;font-weight:500;color:#1a1a1a;margin:0 0 4px;font-family:'Georgia',serif}
+.page-subtitle{font-size:13px;color:#6b6b6b;margin:0;font-family:'Georgia',serif}
+.btn-primary{display:inline-flex;align-items:center;gap:6px;background:#1a3a5c;color:#fff;text-decoration:none;padding:8px 16px;border-radius:7px;font-size:13px;font-family:'Georgia',serif;border:none;cursor:pointer;transition:background .15s;white-space:nowrap;height:34px}
+.btn-primary:hover{background:#142e4a}
+.btn-secondary{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#4a4a4a;text-decoration:none;padding:7px 14px;border-radius:7px;font-size:13px;font-family:'Georgia',serif;border:1px solid #e2e0da;cursor:pointer;transition:background .15s;height:34px}
+.btn-secondary:hover{background:#f4f3ef}
+.filter-card{background:#fff;border:1px solid #e2e0da;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem}
+.filter-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.filter-group{display:flex;flex-direction:column;gap:4px;min-width:130px}
+.filter-group label{font-size:11px;font-weight:600;color:#6b6b6b;text-transform:uppercase;letter-spacing:.06em;font-family:'Georgia',serif}
+.filter-group select,.filter-group input[type=date]{height:34px;padding:0 10px;border:1px solid #e2e0da;border-radius:6px;font-size:13px;font-family:'Georgia',serif;color:#1a1a1a;background:#fff;outline:none;transition:border-color .15s}
+.filter-group select:focus,.filter-group input:focus{border-color:#1a3a5c}
+.search-wrap{position:relative;flex:1;min-width:180px}
+.search-wrap input{width:100%;height:34px;padding:0 10px 0 34px;border:1px solid #e2e0da;border-radius:6px;font-size:13px;font-family:'Georgia',serif;color:#1a1a1a;outline:none;transition:border-color .15s}
+.search-wrap input:focus{border-color:#1a3a5c}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:#9b9b9b}
+.filter-actions{display:flex;gap:6px;margin-top:2px}
+.tbl-card{background:#fff;border:1px solid #e2e0da;border-radius:10px;overflow:hidden}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-family:'Georgia',serif;font-size:13px}
+thead tr{background:#f8f7f5;border-bottom:1px solid #e2e0da}
+th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;color:#6b6b6b;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+tbody tr{border-bottom:1px solid #f0ede8;transition:background .1s}
+tbody tr:hover{background:#faf9f7}
+tbody tr:last-child{border-bottom:none}
+td{padding:10px 14px;color:#1a1a1a;vertical-align:middle}
+.asset-img{width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #e2e0da}
+.img-placeholder{width:48px;height:48px;border-radius:6px;background:#f4f3ef;border:1px solid #e2e0da;display:flex;align-items:center;justify-content:center}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:500;white-space:nowrap}
+.badge-active{background:#e1f4ec;color:#0f6e56}
+.badge-inactive{background:#f4f3ef;color:#6b6b6b}
+.badge-vehicle{background:#e8f0f8;color:#1a3a5c}
+.badge-it{background:#faeeda;color:#854f0b}
+.code-chip{font-family:monospace;font-size:11px;color:#6b6b6b;background:#f4f3ef;padding:2px 6px;border-radius:4px}
+.action-links{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.action-link{font-size:12px;color:#1a3a5c;text-decoration:none;padding:3px 9px;border:1px solid #c5d6e8;border-radius:5px;background:#f0f5fa;white-space:nowrap;transition:background .15s}
+.action-link:hover{background:#dce8f5}
+.action-link.green{color:#0f6e56;border-color:#9fe1cb;background:#e1f4ec}
+.action-link.green:hover{background:#c0e8d8}
+.empty-row td{text-align:center;padding:2.5rem;color:#6b6b6b;font-style:italic}
+.tbl-footer{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #f0ede8;flex-wrap:wrap;gap:8px}
+.tbl-count{font-size:12px;color:#6b6b6b;font-family:'Georgia',serif}
+.pagination{display:flex;align-items:center;gap:4px}
+.page-btn{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;font-size:12px;font-family:'Georgia',serif;border:1px solid #e2e0da;background:#fff;color:#4a4a4a;text-decoration:none;cursor:pointer;transition:background .15s}
+.page-btn:hover{background:#f4f3ef}
+.page-btn.active{background:#1a3a5c;color:#fff;border-color:#1a3a5c}
+.page-btn.disabled{color:#c0bdb8;pointer-events:none}
+@media(max-width:600px){.filter-group{min-width:100%}.filter-row{flex-direction:column}.search-wrap{min-width:100%}}
+</style>
+
+<div class="page-header">
+    <h2 class="page-title">University assets</h2>
+    <p class="page-subtitle">View available assets and submit maintenance requests.</p>
+</div>
+
+<div class="filter-card">
+    <form method="get">
+        <div class="filter-row">
+            <div class="search-wrap">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" name="q" placeholder="Search assets…" value="{{ request.GET.q }}">
+            </div>
+            <div class="filter-group">
+                <label>Asset type</label>
+                <select name="asset_type">
+                    <option value="">All types</option>
+                    <option value="VEHICLE" {% if selected_asset_type == "VEHICLE" %}selected{% endif %}>Vehicle</option>
+                    <option value="IT" {% if selected_asset_type == "IT" %}selected{% endif %}>IT Equipment</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Status</label>
+                <select name="status">
+                    <option value="">All statuses</option>
+                    <option value="ACTIVE" {% if selected_status == "ACTIVE" %}selected{% endif %}>Active</option>
+                    <option value="INACTIVE" {% if selected_status == "INACTIVE" %}selected{% endif %}>Inactive</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Date from</label>
+                <input type="date" name="purchase_date_from" value="{{ purchase_date_from }}">
+            </div>
+            <div class="filter-group">
+                <label>Date to</label>
+                <input type="date" name="purchase_date_to" value="{{ purchase_date_to }}">
+            </div>
+            <div class="filter-actions">
+                <button type="submit" class="btn-primary">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                    Filter
+                </button>
+                <a href="{% url 'asset-list' %}" class="btn-secondary">Clear</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="tbl-card">
+    <div class="tbl-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:64px">Image</th>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asset in assets %}
+                <tr>
+                    <td>
+                        {% if asset.photo %}
+                            <img src="{{ asset.photo }}" class="asset-img" alt="{{ asset.name }}">
+                        {% else %}
+                            <div class="img-placeholder">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c0bdb8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td><span class="code-chip">{{ asset.asset_code }}</span></td>
+                    <td style="font-weight:500">{{ asset.name }}</td>
+                    <td>
+                        {% if asset.asset_type == "VEHICLE" %}
+                            <span class="badge badge-vehicle">Vehicle</span>
+                        {% elif asset.asset_type == "IT" %}
+                            <span class="badge badge-it">IT Equipment</span>
+                        {% else %}
+                            <span class="badge" style="background:#f4f3ef;color:#5f5e5a">{{ asset.asset_type }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if asset.status == "ACTIVE" %}
+                            <span class="badge badge-active">● Active</span>
+                        {% else %}
+                            <span class="badge badge-inactive">○ Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-links">
+                            <a href="{% url 'asset-detail' asset.id %}" class="action-link">View</a>
+                            {% if asset.status == "ACTIVE" %}
+                                <a href="{% url 'create-request' %}?asset={{ asset.id }}" class="action-link green">Request maintenance</a>
+                            {% endif %}
+                            {% if asset.asset_type == "VEHICLE" %}
+                                <a href="{% url 'submit-mileage' %}?asset={{ asset.id }}" class="action-link">Submit mileage</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr class="empty-row"><td colspan="6">No assets found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if assets %}
+    <div class="tbl-footer">
+        <span class="tbl-count">Showing {{ assets|length }} asset{{ assets|length|pluralize }}</span>
+        {% if assets.has_other_pages %}
+        <nav class="pagination" aria-label="Pagination">
+            {% if assets.has_previous %}
+                <a href="?page={{ assets.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if selected_asset_type %}&asset_type={{ selected_asset_type }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}" class="page-btn" aria-label="Previous">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </a>
+            {% else %}
+                <span class="page-btn disabled"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></span>
+            {% endif %}
+            {% for num in assets.paginator.page_range %}
+                {% if assets.number == num %}
+                    <span class="page-btn active">{{ num }}</span>
+                {% elif num >= assets.number|add:"-2" and num <= assets.number|add:"2" %}
+                    <a href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if selected_asset_type %}&asset_type={{ selected_asset_type }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}" class="page-btn">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if assets.has_next %}
+                <a href="?page={{ assets.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if selected_asset_type %}&asset_type={{ selected_asset_type }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}" class="page-btn" aria-label="Next">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+            {% else %}
+                <span class="page-btn disabled"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+            {% endif %}
+        </nav>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

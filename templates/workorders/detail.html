@@ -1,0 +1,80 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block role_content %}
+<style>
+*{box-sizing:border-box}
+.back-link{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:#6b6b6b;text-decoration:none;margin-bottom:1.25rem;font-family:'Georgia',serif}
+.back-link:hover{color:#1a3a5c}
+.detail-card{background:#fff;border:1px solid #e2e0da;border-radius:10px;padding:1.5rem;max-width:580px}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid #f0ede8}
+.card-title{font-size:18px;font-weight:500;color:#1a1a1a;margin:0;font-family:'Georgia',serif}
+.card-id{font-family:monospace;font-size:12px;color:#6b6b6b;background:#f4f3ef;padding:3px 8px;border-radius:5px;margin-top:4px;display:inline-block}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:4px 10px;border-radius:5px;font-weight:500;white-space:nowrap;flex-shrink:0}
+.badge-done{background:#e1f4ec;color:#0f6e56}
+.badge-pending{background:#faeeda;color:#854f0b}
+.field-row{display:flex;flex-direction:column;gap:3px;padding:10px 0;border-bottom:1px solid #f4f3ef}
+.field-row:last-child{border-bottom:none}
+.field-label{font-size:11px;color:#9b9b9b;text-transform:uppercase;letter-spacing:.06em;font-family:'Georgia',serif}
+.field-value{font-size:14px;color:#1a1a1a;font-family:'Georgia',serif;line-height:1.5}
+.field-value.muted{color:#6b6b6b;font-style:italic}
+.action-section{margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid #f0ede8}
+.action-label{font-size:11px;font-weight:600;color:#6b6b6b;text-transform:uppercase;letter-spacing:.08em;margin:0 0 .75rem;font-family:'Georgia',serif}
+.btn-complete{display:inline-flex;align-items:center;gap:7px;background:#0f6e56;color:#fff;padding:9px 20px;border-radius:7px;font-size:13px;font-family:'Georgia',serif;border:none;cursor:pointer;transition:background .15s}
+.btn-complete:hover{background:#0a5240}
+</style>
+
+<a href="{% url 'workorder-list' %}" class="back-link">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to work orders
+</a>
+
+<div class="detail-card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title">Work Order</h2>
+            <span class="card-id">#{{ workorder.id }}</span>
+        </div>
+        {% if workorder.completed %}
+            <span class="badge badge-done">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                Completed
+            </span>
+        {% else %}
+            <span class="badge badge-pending">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Pending
+            </span>
+        {% endif %}
+    </div>
+
+    <div class="field-row">
+        <span class="field-label">Description</span>
+        <span class="field-value">{{ workorder.work_description }}</span>
+    </div>
+
+    <div class="field-row">
+        <span class="field-label">Completed</span>
+        <span class="field-value">{% if workorder.completed %}Yes{% else %}No{% endif %}</span>
+    </div>
+
+    <div class="field-row">
+        <span class="field-label">Completion date</span>
+        <span class="field-value {% if not workorder.completion_date %}muted{% endif %}">
+            {% if workorder.completion_date %}{{ workorder.completion_date }}{% else %}Not yet completed{% endif %}
+        </span>
+    </div>
+
+    {% if user_role == "MANAGER" and not workorder.completed %}
+    <div class="action-section">
+        <p class="action-label">Manager action</p>
+        <form method="post" action="{% url 'complete-workorder' workorder.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-complete">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                Mark as complete
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

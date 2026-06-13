@@ -1,0 +1,134 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block role_content %}
+<style>
+    .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:2rem}
+    .stat-card{background:#f4f3ef;border-radius:8px;padding:1rem 1.25rem}
+    .stat-label{font-size:12px;color:#6b6b6b;text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px;font-family:'Georgia',serif}
+    .stat-value{font-size:26px;font-weight:500;color:#1a1a1a;margin:0;font-family:'Georgia',serif;line-height:1.1}
+    .section-title{font-size:11px;font-weight:600;color:#6b6b6b;text-transform:uppercase;letter-spacing:.08em;margin:0 0 1rem;font-family:'Georgia',serif}
+    .card{background:#fff;border:1px solid #e2e0da;border-radius:10px;padding:1.25rem}
+    .charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:2rem}
+    .alert-row{display:flex;align-items:center;justify-content:space-between;background:#fff8f0;border:1px solid #f5dab8;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-family:'Georgia',serif}
+    .alert-name{font-size:13px;color:#1a1a1a;font-weight:500}
+    .alert-mileage{font-size:12px;color:#8a6030;background:#fdebd0;border-radius:5px;padding:3px 9px}
+    .empty-state{font-size:13px;color:#6b6b6b;background:#f4f3ef;border-radius:8px;padding:12px 16px;font-family:'Georgia',serif;display:flex;align-items:center;gap:8px}
+    .legend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:10px;font-size:12px;color:#6b6b6b;font-family:'Georgia',serif}
+    .legend span{display:flex;align-items:center;gap:5px}
+    .legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+</style>
+
+<p style="font-size:13px;color:#6b6b6b;margin:0 0 1.5rem;font-family:'Georgia',serif">Fleet and asset overview for your organisation.</p>
+
+<div class="dash-grid">
+    <div class="stat-card">
+        <p class="stat-label">Total Assets</p>
+        <p class="stat-value">{{ stats.total_assets }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Total Requests</p>
+        <p class="stat-value">{{ stats.total_requests }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Work Orders</p>
+        <p class="stat-value">{{ stats.total_work_orders }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Fleet Value</p>
+        <p class="stat-value">{{ stats.fleet_value }}</p>
+    </div>
+</div>
+
+<div class="charts-grid">
+    <div class="card">
+        <p class="section-title" style="margin-bottom:.75rem">Fleet overview</p>
+        <div class="legend">
+            <span><span class="legend-dot" style="background:#1a3a5c"></span>Assets</span>
+            <span><span class="legend-dot" style="background:#b5d4f4"></span>Requests</span>
+            <span><span class="legend-dot" style="background:#5dcaa5"></span>Work orders</span>
+        </div>
+        <div style="position:relative;width:100%;height:200px">
+            <canvas id="overviewChart" role="img" aria-label="Bar chart comparing total assets, requests and work orders">Assets: {{ stats.total_assets }}, Requests: {{ stats.total_requests }}, Work orders: {{ stats.total_work_orders }}.</canvas>
+        </div>
+    </div>
+    <div class="card">
+        <p class="section-title" style="margin-bottom:.75rem">Requests vs work orders</p>
+        <div class="legend">
+            <span><span class="legend-dot" style="background:#1a3a5c;border-radius:50%"></span>Requests {{ stats.total_requests }}</span>
+            <span><span class="legend-dot" style="background:#5dcaa5;border-radius:50%"></span>Work orders {{ stats.total_work_orders }}</span>
+        </div>
+        <div style="position:relative;width:100%;height:200px">
+            <canvas id="donutChart" role="img" aria-label="Donut chart of requests versus work orders">Requests: {{ stats.total_requests }}, Work orders: {{ stats.total_work_orders }}.</canvas>
+        </div>
+    </div>
+</div>
+
+<p class="section-title">Maintenance alerts</p>
+{% for alert in alerts %}
+<div class="alert-row">
+    <div style="display:flex;align-items:center;gap:8px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#b36a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span class="alert-name">{{ alert.name }}</span>
+    </div>
+    <span class="alert-mileage">{{ alert.current_mileage }} mi</span>
+</div>
+{% empty %}
+<div class="empty-state">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6b6b6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+    No maintenance alerts at this time.
+</div>
+{% endfor %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+(function(){
+    var assets = {{ stats.total_assets|default:0 }};
+    var requests = {{ stats.total_requests|default:0 }};
+    var workorders = {{ stats.total_work_orders|default:0 }};
+
+    var baseOpts = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c){ return ' ' + c.parsed.y; } } } }
+    };
+
+    new Chart(document.getElementById('overviewChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Assets', 'Requests', 'Work orders'],
+            datasets: [{
+                data: [assets, requests, workorders],
+                backgroundColor: ['#1a3a5c', '#b5d4f4', '#5dcaa5'],
+                borderRadius: 5,
+                borderSkipped: false
+            }]
+        },
+        options: Object.assign({}, baseOpts, {
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#6b6b6b', font: { size: 12 } } },
+                y: { grid: { color: '#f0ede8' }, ticks: { color: '#6b6b6b', font: { size: 11 }, stepSize: 1 }, beginAtZero: true }
+            }
+        })
+    });
+
+    new Chart(document.getElementById('donutChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Requests', 'Work orders'],
+            datasets: [{
+                data: [requests, workorders],
+                backgroundColor: ['#1a3a5c', '#5dcaa5'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '68%',
+            plugins: { legend: { display: false } }
+        }
+    });
+})();
+</script>
+{% endblock %}

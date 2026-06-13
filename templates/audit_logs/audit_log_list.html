@@ -1,0 +1,319 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block role_content %}
+
+<style>
+.page-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.page-title{
+    font-size:22px;
+    font-family:Georgia,serif;
+}
+
+.filter-card{
+    background:#fff;
+    border:1px solid #ddd;
+    padding:15px;
+    border-radius:8px;
+    margin-bottom:20px;
+}
+
+.filter-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.filter-row input,
+.filter-row select{
+    padding:8px;
+    border:1px solid #ddd;
+    border-radius:6px;
+}
+
+.btn{
+    background:#1a3a5c;
+    color:white;
+    border:none;
+    padding:8px 15px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.table-card{
+    background:white;
+    border-radius:10px;
+    border:1px solid #ddd;
+    overflow:hidden;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#f7f7f7;
+    padding:12px;
+    text-align:left;
+}
+
+td{
+    padding:12px;
+    border-top:1px solid #eee;
+}
+
+.badge{
+    padding:4px 8px;
+    border-radius:4px;
+    font-size:11px;
+}
+
+.create{
+    background:#e6f7e6;
+}
+
+.update{
+    background:#fff3cd;
+}
+
+.delete{
+    background:#f8d7da;
+}
+
+.login{
+    background:#d1ecf1;
+}
+
+.approve{
+    background:#d4edda;
+}
+
+.reject{
+    background:#f8d7da;
+}
+
+.complete{
+    background:#e2e3e5;
+}
+
+.pagination{
+    margin-top:20px;
+    display:flex;
+    gap:5px;
+}
+</style>
+
+<div class="page-header">
+    <h2 class="page-title">
+        Audit Logs
+    </h2>
+</div>
+
+<div class="filter-card">
+
+    <form method="get">
+
+        <div class="filter-row">
+
+            <input
+                type="text"
+                name="q"
+                placeholder="Search..."
+                value="{{ request.GET.q }}"
+            >
+
+            <select name="action">
+
+                <option value="">
+                    All Actions
+                </option>
+
+                <option value="CREATE"
+                    {% if selected_action == "CREATE" %}
+                    selected
+                    {% endif %}
+                >
+                    Create
+                </option>
+
+                <option value="UPDATE"
+                    {% if selected_action == "UPDATE" %}
+                    selected
+                    {% endif %}
+                >
+                    Update
+                </option>
+
+                <option value="DELETE"
+                    {% if selected_action == "DELETE" %}
+                    selected
+                    {% endif %}
+                >
+                    Delete
+                </option>
+
+                <option value="LOGIN"
+                    {% if selected_action == "LOGIN" %}
+                    selected
+                    {% endif %}
+                >
+                    Login
+                </option>
+
+                <option value="APPROVE"
+                    {% if selected_action == "APPROVE" %}
+                    selected
+                    {% endif %}
+                >
+                    Approve
+                </option>
+
+                <option value="REJECT"
+                    {% if selected_action == "REJECT" %}
+                    selected
+                    {% endif %}
+                >
+                    Reject
+                </option>
+
+                <option value="COMPLETE"
+                    {% if selected_action == "COMPLETE" %}
+                    selected
+                    {% endif %}
+                >
+                    Complete
+                </option>
+
+            </select>
+
+            <input
+                type="text"
+                name="model_name"
+                placeholder="Model"
+                value="{{ selected_model }}"
+            >
+
+            <button
+                type="submit"
+                class="btn"
+            >
+                Filter
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+<div class="table-card">
+
+<table>
+
+    <thead>
+
+        <tr>
+
+            <th>Date</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Model</th>
+            <th>Object ID</th>
+            <th>IP</th>
+            <th>Details</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+    {% for log in logs %}
+
+        <tr>
+
+            <td>
+                {{ log.timestamp }}
+            </td>
+
+            <td>
+                {{ log.username }}
+            </td>
+
+            <td>
+
+                <span class="badge {{ log.action|lower }}">
+                    {{ log.action }}
+                </span>
+
+            </td>
+
+            <td>
+                {{ log.model_name }}
+            </td>
+
+            <td>
+                {{ log.object_id }}
+            </td>
+
+            <td>
+                {{ log.ip_address }}
+            </td>
+
+            <td>
+                {{ log.details }}
+            </td>
+
+        </tr>
+
+    {% empty %}
+
+        <tr>
+
+            <td colspan="7">
+                No audit logs found.
+            </td>
+
+        </tr>
+
+    {% endfor %}
+
+    </tbody>
+
+</table>
+
+</div>
+
+{% if logs.has_other_pages %}
+
+<div class="pagination">
+
+    {% if logs.has_previous %}
+        <a href="?page={{ logs.previous_page_number }}">
+            Previous
+        </a>
+    {% endif %}
+
+    <span>
+        Page {{ logs.number }}
+        of
+        {{ logs.paginator.num_pages }}
+    </span>
+
+    {% if logs.has_next %}
+        <a href="?page={{ logs.next_page_number }}">
+            Next
+        </a>
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+{% endblock %}

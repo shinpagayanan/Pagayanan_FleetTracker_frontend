@@ -1,0 +1,157 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block role_content %}
+<style>
+    *{box-sizing:border-box}
+    .rpt-intro{font-size:13px;color:#6b6b6b;margin:0 0 1.5rem;font-family:'Georgia',serif}
+    .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:1.75rem}
+    .stat-card{background:#f4f3ef;border-radius:8px;padding:.9rem 1.1rem}
+    .stat-card.accent{background:#e8f0f8}
+    .stat-label{font-size:11px;color:#6b6b6b;text-transform:uppercase;letter-spacing:.06em;margin:0 0 5px;font-family:'Georgia',serif}
+    .stat-value{font-size:22px;font-weight:500;color:#1a1a1a;margin:0;font-family:'Georgia',serif;line-height:1.1}
+    .stat-card.accent .stat-value{color:#1a3a5c}
+    .charts-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:1.75rem}
+    .card{background:#fff;border:1px solid #e2e0da;border-radius:10px;padding:1.1rem 1.25rem}
+    .card-title{font-size:11px;font-weight:600;color:#6b6b6b;text-transform:uppercase;letter-spacing:.08em;margin:0 0 .65rem;font-family:'Georgia',serif}
+    .legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;font-size:11px;color:#6b6b6b;font-family:'Georgia',serif}
+    .legend span{display:flex;align-items:center;gap:4px}
+    .ld{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+    .tbl-wrap{overflow-x:auto;margin-top:1.75rem}
+    table{width:100%;border-collapse:collapse;font-family:'Georgia',serif;font-size:13px}
+    thead tr{border-bottom:2px solid #e2e0da}
+    th{text-align:left;padding:9px 12px;font-size:11px;font-weight:600;color:#6b6b6b;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+    tbody tr{border-bottom:1px solid #f0ede8;transition:background .1s}
+    tbody tr:hover{background:#faf9f7}
+    td{padding:9px 12px;color:#1a1a1a;vertical-align:middle}
+    .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:500;white-space:nowrap}
+    .badge-pending{background:#faeeda;color:#854f0b}
+    .badge-approved{background:#e8f0f8;color:#1a3a5c}
+    .badge-completed{background:#e1f4ec;color:#0f6e56}
+    .badge-rejected{background:#fcebeb;color:#a32d2d}
+    .section-title{font-size:11px;font-weight:600;color:#6b6b6b;text-transform:uppercase;letter-spacing:.08em;margin:0 0 1rem;font-family:'Georgia',serif}
+</style>
+
+<p class="rpt-intro">Overview of all maintenance requests across the fleet.</p>
+
+<div class="stat-grid">
+    <div class="stat-card accent">
+        <p class="stat-label">Total</p>
+        <p class="stat-value">{{ report.summary.total_requests }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Pending</p>
+        <p class="stat-value">{{ report.summary.pending }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Approved</p>
+        <p class="stat-value">{{ report.summary.approved }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Rejected</p>
+        <p class="stat-value">{{ report.summary.rejected }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Completed</p>
+        <p class="stat-value">{{ report.summary.completed }}</p>
+    </div>
+</div>
+
+<div class="charts-row">
+    <div class="card">
+        <p class="card-title">Status breakdown</p>
+        <div class="legend">
+            <span><span class="ld" style="background:#ef9f27;border-radius:50%"></span>Pending</span>
+            <span><span class="ld" style="background:#1a3a5c;border-radius:50%"></span>Approved</span>
+            <span><span class="ld" style="background:#1d9e75;border-radius:50%"></span>Completed</span>
+            <span><span class="ld" style="background:#e24b4a;border-radius:50%"></span>Rejected</span>
+        </div>
+        <div style="position:relative;width:100%;height:200px">
+            <canvas id="statusDonut" role="img" aria-label="Donut chart of maintenance request statuses">Pending: {{ report.summary.pending }}, Approved: {{ report.summary.approved }}, Completed: {{ report.summary.completed }}, Rejected: {{ report.summary.rejected }}.</canvas>
+        </div>
+    </div>
+    <div class="card">
+        <p class="card-title">Requests by status</p>
+        <div class="legend">
+            <span><span class="ld" style="background:#ef9f27"></span>Pending</span>
+            <span><span class="ld" style="background:#1a3a5c"></span>Approved</span>
+            <span><span class="ld" style="background:#1d9e75"></span>Completed</span>
+            <span><span class="ld" style="background:#e24b4a"></span>Rejected</span>
+        </div>
+        <div style="position:relative;width:100%;height:200px">
+            <canvas id="statusBar" role="img" aria-label="Bar chart of maintenance requests by status">Pending: {{ report.summary.pending }}, Approved: {{ report.summary.approved }}, Completed: {{ report.summary.completed }}, Rejected: {{ report.summary.rejected }}.</canvas>
+        </div>
+    </div>
+</div>
+
+<p class="section-title">Request log</p>
+<div class="tbl-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Asset</th>
+                <th>Requested by</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in report.requests %}
+            <tr>
+                <td><span style="font-family:monospace;font-size:12px;color:#6b6b6b">#{{ item.id }}</span></td>
+                <td style="font-weight:500">{{ item.asset }}</td>
+                <td>{{ item.requested_by }}</td>
+                <td>
+                    {% if item.status == "Pending" or item.status == "PENDING" %}
+                        <span class="badge badge-pending">● Pending</span>
+                    {% elif item.status == "Approved" or item.status == "APPROVED" %}
+                        <span class="badge badge-approved">● Approved</span>
+                    {% elif item.status == "Completed" or item.status == "COMPLETED" %}
+                        <span class="badge badge-completed">● Completed</span>
+                    {% elif item.status == "Rejected" or item.status == "REJECTED" %}
+                        <span class="badge badge-rejected">● Rejected</span>
+                    {% else %}
+                        <span class="badge" style="background:#f4f3ef;color:#6b6b6b">{{ item.status }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+(function(){
+    var pending = {{ report.summary.pending|default:0 }};
+    var approved = {{ report.summary.approved|default:0 }};
+    var completed = {{ report.summary.completed|default:0 }};
+    var rejected = {{ report.summary.rejected|default:0 }};
+    var colors = ['#ef9f27','#1a3a5c','#1d9e75','#e24b4a'];
+
+    new Chart(document.getElementById('statusDonut'),{
+        type:'doughnut',
+        data:{
+            labels:['Pending','Approved','Completed','Rejected'],
+            datasets:[{data:[pending,approved,completed,rejected],backgroundColor:colors,borderWidth:0,hoverOffset:4}]
+        },
+        options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false}}}
+    });
+
+    new Chart(document.getElementById('statusBar'),{
+        type:'bar',
+        data:{
+            labels:['Pending','Approved','Completed','Rejected'],
+            datasets:[{data:[pending,approved,completed,rejected],backgroundColor:colors,borderRadius:5,borderSkipped:false}]
+        },
+        options:{
+            responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false}},
+            scales:{
+                x:{grid:{display:false},ticks:{color:'#6b6b6b',font:{size:12}}},
+                y:{grid:{color:'#f0ede8'},ticks:{color:'#6b6b6b',font:{size:11},stepSize:1},beginAtZero:true}
+            }
+        }
+    });
+})();
+</script>
+{% endblock %}

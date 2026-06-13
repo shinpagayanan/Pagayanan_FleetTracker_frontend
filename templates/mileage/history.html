@@ -1,0 +1,138 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block role_content %}
+<style>
+*{box-sizing:border-box}
+.page-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:1.5rem;
+    flex-wrap:wrap;
+    gap:10px
+}
+.page-title{
+    font-size:20px;
+    font-weight:500;
+    color:#1a1a1a;
+    margin:0;
+    font-family:'Georgia',serif
+}
+.tbl-card{
+    background:#fff;
+    border:1px solid #e2e0da;
+    border-radius:10px;
+    overflow:hidden
+}
+.tbl-wrap{
+    overflow-x:auto
+}
+table{
+    width:100%;
+    border-collapse:collapse;
+    font-family:'Georgia',serif;
+    font-size:13px
+}
+thead tr{
+    background:#f8f7f5;
+    border-bottom:1px solid #e2e0da
+}
+th{
+    text-align:left;
+    padding:10px 14px;
+    font-size:11px;
+    font-weight:600;
+    color:#6b6b6b;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    white-space:nowrap
+}
+tbody tr{
+    border-bottom:1px solid #f0ede8;
+    transition:background .1s
+}
+tbody tr:hover{
+    background:#faf9f7
+}
+tbody tr:last-child{
+    border-bottom:none
+}
+td{
+    padding:10px 14px;
+    color:#1a1a1a;
+    vertical-align:middle
+}
+.vehicle-name{
+    font-weight:500;
+    color:#1a1a1a
+}
+.mileage-chip{
+    display:inline-block;
+    background:#e8f0f8;
+    color:#1a3a5c;
+    padding:3px 8px;
+    border-radius:4px;
+    font-size:12px;
+    font-weight:500
+}
+.date-text{
+    color:#6b6b6b
+}
+.empty-row td{
+    text-align:center;
+    padding:2.5rem;
+    color:#6b6b6b;
+    font-style:italic
+}
+</style>
+
+<div class="page-header">
+    <h2 class="page-title">Mileage History</h2>
+</div>
+
+<div class="tbl-card">
+    <div class="tbl-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Vehicle</th>
+                    <th>Mileage</th>
+                    <th>Date Submitted</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>
+                        <span class="vehicle-name">
+                            {{ log.asset_name }}
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="mileage-chip">
+                            {{ log.mileage }} km
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="date-text">
+                            {{ log.submitted_at }}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr class="empty-row">
+                    <td colspan="3">
+                        No mileage records found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block role_content %}
+<style>
+*{box-sizing:border-box}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:10px}
+.page-title{font-size:20px;font-weight:500;color:#1a1a1a;margin:0;font-family:'Georgia',serif}
+.btn-primary{display:inline-flex;align-items:center;gap:6px;background:#1a3a5c;color:#fff;text-decoration:none;padding:8px 16px;border-radius:7px;font-size:13px;font-family:'Georgia',serif;border:none;cursor:pointer;transition:background .15s;white-space:nowrap}
+.btn-primary:hover{background:#142e4a}
+.tbl-card{background:#fff;border:1px solid #e2e0da;border-radius:10px;overflow:hidden}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-family:'Georgia',serif;font-size:13px}
+thead tr{background:#f8f7f5;border-bottom:1px solid #e2e0da}
+th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;color:#6b6b6b;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+tbody tr{border-bottom:1px solid #f0ede8;transition:background .1s}
+tbody tr:hover{background:#faf9f7}
+tbody tr:last-child{border-bottom:none}
+td{padding:10px 14px;color:#1a1a1a;vertical-align:middle}
+.id-chip{font-family:monospace;font-size:11px;color:#6b6b6b;background:#f4f3ef;padding:2px 7px;border-radius:4px}
+.asset-name{font-weight:500}
+.issue{max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#4a4a4a}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:500;white-space:nowrap}
+.badge-pending{background:#faeeda;color:#854f0b}
+.badge-approved{background:#e8f0f8;color:#1a3a5c}
+.badge-rejected{background:#fcebeb;color:#a32d2d}
+.badge-completed{background:#e1f4ec;color:#0f6e56}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;gap:10px;color:#6b6b6b;font-family:'Georgia',serif;text-align:center}
+.empty-state p{margin:0;font-size:13px}
+</style>
+
+<div class="page-header">
+    <h2 class="page-title">My Requests</h2>
+    <a href="{% url 'create-request' %}" class="btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New request
+    </a>
+</div>
+
+<div class="tbl-card">
+    <div class="tbl-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Asset</th>
+                    <th>Issue</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request_item in requests %}
+                <tr>
+                    <td><span class="id-chip">#{{ request_item.id }}</span></td>
+                    <td><span class="asset-name">{{ request_item.asset_name }}</span></td>
+                    <td><span class="issue" title="{{ request_item.issue_description }}">{{ request_item.issue_description }}</span></td>
+                    <td>
+                        {% if request_item.status == "PENDING" %}
+                            <span class="badge badge-pending">● Pending</span>
+                        {% elif request_item.status == "APPROVED" %}
+                            <span class="badge badge-approved">● Approved</span>
+                        {% elif request_item.status == "REJECTED" %}
+                            <span class="badge badge-rejected">● Rejected</span>
+                        {% elif request_item.status == "COMPLETED" %}
+                            <span class="badge badge-completed">● Completed</span>
+                        {% else %}
+                            <span class="badge" style="background:#f4f3ef;color:#6b6b6b">{{ request_item.status }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">
+                        <div class="empty-state">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#d3d1c7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            <p>No requests yet.</p>
+                            <a href="{% url 'create-request' %}" class="btn-primary" style="margin-top:4px">Submit your first request</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
