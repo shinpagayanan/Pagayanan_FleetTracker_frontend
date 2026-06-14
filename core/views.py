@@ -1523,3 +1523,6 @@ def bulk_assign_assets_view(
             "form": form
         }
     )
+
+def test_backend(request):
+    return HttpResponse(settings.BACKEND_API_URL)

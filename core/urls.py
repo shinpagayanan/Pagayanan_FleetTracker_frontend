@@ -184,6 +184,7 @@ path(
     views.bulk_assign_assets_view,
     name="bulk-assign-assets"
 ),
-
-
+path(
+    "test-backend/", views.test_backend
+),
 ]
