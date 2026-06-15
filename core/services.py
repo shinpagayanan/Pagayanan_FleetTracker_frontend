@@ -86,14 +86,20 @@ def api_put_file(
     )
 def login_user(username, password):
 
+    url = f"{settings.BACKEND_API_URL}/token/"
+
+    print("LOGIN URL:", url)
+
     response = requests.post(
-        f"{settings.BACKEND_API_URL}/token/",
+        url,
         json={
             "username": username,
             "password": password,
         },
         timeout=90
     )
+
+    print("STATUS:", response.status_code)
 
     return response
 
