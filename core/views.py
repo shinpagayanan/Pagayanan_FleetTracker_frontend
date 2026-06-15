@@ -25,9 +25,8 @@ from .services import api_get
 
 def home(request):
 
-    return render(
-        request,
-        "home.html"
+    return redirect(
+        "dashboard"
     )
 def login_view(request):
 
@@ -1523,6 +1522,6 @@ def bulk_assign_assets_view(
             "form": form
         }
     )
-from django.conf import settings
-def test_backend(request):
-    return HttpResponse(settings.BACKEND_API_URL)
+# from django.conf import settings
+# def test_backend(request):
+#     return HttpResponse(settings.BACKEND_API_URL)

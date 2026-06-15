@@ -16,7 +16,7 @@ def api_get(endpoint, token=None):
     return requests.get(
         f"{settings.BACKEND_API_URL}/{endpoint}",
         headers=headers,
-        timeout=10
+        timeout=90
     )
 
 
@@ -28,7 +28,7 @@ def api_post(endpoint, token, data):
         headers={
             "Authorization": f"Bearer {token}"
         },
-        timeout=10
+        timeout=90
     )
 
 def api_patch(
@@ -44,7 +44,7 @@ def api_patch(
             "Authorization":
             f"Bearer {token}"
         },
-        timeout=10
+        timeout=90
     )
 
 # services.py
@@ -64,7 +64,7 @@ def api_post_file(
             "Authorization":
             f"Bearer {token}"
         },
-        timeout=10
+        timeout=90
     )
 
 def api_put_file(
@@ -82,7 +82,7 @@ def api_put_file(
             "Authorization":
             f"Bearer {token}"
         },
-        timeout=10
+        timeout=90
     )
 def login_user(username, password):
 
@@ -92,7 +92,7 @@ def login_user(username, password):
             "username": username,
             "password": password,
         },
-        timeout=10
+        timeout=90
     )
 
     return response
@@ -105,7 +105,7 @@ def get_current_user(token):
             "Authorization":
                 f"Bearer {token}"
         },
-        timeout=10
+        timeout=90
     )
     
 
@@ -123,7 +123,7 @@ def api_put(
             "Authorization":
             f"Bearer {token}"
         },
-        timeout=10
+        timeout=90
     )
 
 def api_delete(
@@ -137,5 +137,5 @@ def api_delete(
             "Authorization":
             f"Bearer {token}"
         },
-        timeout=10
+        timeout=90
     )
