@@ -1531,13 +1531,17 @@ def wake_backend(request):
 
     try:
         r = requests.get(
-            settings.BACKEND_API_URL,
+            "https://pagayanan-fleettracker-backend.onrender.com/admin/",
             timeout=90
         )
 
         return HttpResponse(
-            f"Status: {r.status_code}<br>{r.text[:500]}"
+            f"Status: {r.status_code}<br>"
+            f"Final URL: {r.url}<br>"
+            f"{r.text[:500]}"
         )
 
     except Exception as e:
-        return HttpResponse(str(e))
+        return HttpResponse(
+            f"ERROR: {type(e).__name__}: {e}"
+        )
