@@ -84,24 +84,93 @@ def api_put_file(
         },
         timeout=90
     )
+
+import time
+import requests
+
 def login_user(username, password):
 
-    url = f"{settings.BACKEND_API_URL}/token/"
-
-    print("LOGIN URL:", url)
-
-    response = requests.post(
-        url,
-        json={
-            "username": username,
-            "password": password,
-        },
-        timeout=90
+    wake_url = settings.BACKEND_API_URL
+    login_url = (
+        f"{settings.BACKEND_API_URL}/token/"
     )
 
-    print("STATUS:", response.status_code)
+    print("WAKE URL:", wake_url)
 
-    return response
+    try:
+
+        requests.get(
+            wake_url,
+            timeout=30
+        )
+
+        print(
+            "Wake-up request sent."
+        )
+
+        time.sleep(8)
+
+    except Exception as e:
+
+        print(
+            "Wake-up failed:",
+            str(e)
+        )
+
+    print(
+        "LOGIN URL:",
+        login_url
+    )
+
+    last_response = None
+
+    for attempt in range(3):
+
+        try:
+
+            print(
+                f"Login attempt {attempt + 1}/3"
+            )
+
+            response = requests.post(
+                login_url,
+                json={
+                    "username": username,
+                    "password": password,
+                },
+                timeout=90
+            )
+
+            print(
+                "STATUS:",
+                response.status_code
+            )
+
+            if response.status_code not in (
+                502,
+                503,
+                504
+            ):
+                return response
+
+            last_response = response
+
+        except requests.RequestException as e:
+
+            print(
+                "REQUEST ERROR:",
+                str(e)
+            )
+
+        if attempt < 2:
+
+            print(
+                "Waiting for backend wake-up..."
+            )
+
+            time.sleep(15)
+
+    return last_response
 
 def get_current_user(token):
 
