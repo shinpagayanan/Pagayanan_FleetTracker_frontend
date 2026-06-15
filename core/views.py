@@ -1522,6 +1522,22 @@ def bulk_assign_assets_view(
             "form": form
         }
     )
-# from django.conf import settings
+from django.conf import settings
+import requests
 # def test_backend(request):
 #     return HttpResponse(settings.BACKEND_API_URL)
+
+def wake_backend(request):
+
+    try:
+        r = requests.get(
+            settings.BACKEND_API_URL,
+            timeout=90
+        )
+
+        return HttpResponse(
+            f"Status: {r.status_code}<br>{r.text[:500]}"
+        )
+
+    except Exception as e:
+        return HttpResponse(str(e))

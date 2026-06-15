@@ -11,7 +11,7 @@ class AuthenticationMiddleware:
 
         "/login/",
         "/logout/",
-        "/test-backend",
+        "/wake-backend",
 
         "/static/",
         "/media/",

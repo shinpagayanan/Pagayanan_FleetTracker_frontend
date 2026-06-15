@@ -187,4 +187,9 @@ path(
 # path(
 #     "test-backend/", views.test_backend
 # ),
+
+path(
+    "wake-backend/",
+    views.wake_backend,
+)
 ]
